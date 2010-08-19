@@ -35,25 +35,29 @@ describe SerializationScopes do
 )
   end
 
+  def as_hash(options = {})
+    ActiveSupport::JSON.decode(SomeModel.new.to_json(options))
+  end
+
   it 'should constraint to_json' do
-    SomeModel.new.to_json.should == %({"name":"Any","currency":"USD","id":1})
+    as_hash.should == { "name" => "Any", "currency" => "USD", "id" => 1 }
   end
 
   it 'should allow further restrictions' do
-    SomeModel.new.to_json(:only => :name).should == %({"name":"Any","currency":"USD"})
-    SomeModel.new.to_json(:methods => []).should == %({"name":"Any","id":1})
+    as_hash(:only => :name).should == { "name" => "Any", "currency" => "USD" }
+    as_hash(:methods => []).should == { "name" => "Any", "id" => 1 }
   end
 
-  it 'should deny extensions' do
-    SomeModel.new.to_json(:only => [:id, :secret]).should == %({"currency":"USD","id":1})
+  it 'should deny extensions if (default) scope is selected' do
+    as_hash(:only => [:id, :secret]).should == { "id" => 1, "currency" => "USD" }
   end
 
   it 'should have separate behaviours for different scopes' do
-    SomeModel.new.to_json(:scope => :admin).should == %({"id":1,"secret":"key"})
+    as_hash(:scope => :admin).should == { "id" => 1, "secret" => "key" }
   end
 
   it 'should fallback to default scope if invalid scope is given' do
-    SomeModel.new.to_json(:scope => :invalid).should == %({"name":"Any","currency":"USD","id":1})
+    as_hash(:scope => :invalid).should == { "name" => "Any", "currency" => "USD", "id" => 1 }
   end
 
 end
