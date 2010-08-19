@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{serialization_scopes}
-  s.version = "0.2.0"
+  s.version = "0.2.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Dimitrij Denissenko"]
@@ -23,6 +23,8 @@ Gem::Specification.new do |s|
      "Rakefile",
      "VERSION",
      "lib/serialization_scopes.rb",
+     "lib/serialization_scopes/matchers.rb",
+     "lib/serialization_scopes/matchers/serialize_matcher.rb",
      "rails/init.rb",
      "serialization_scopes.gemspec",
      "spec/helper.rb",
