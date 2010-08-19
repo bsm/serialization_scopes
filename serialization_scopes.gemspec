@@ -5,16 +5,21 @@
 
 Gem::Specification.new do |s|
   s.name = %q{serialization_scopes}
-  s.version = "0.1.0"
+  s.version = "0.1.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Dimitrij Denissenko"]
   s.date = %q{2010-08-19}
   s.description = %q{Adds named scopes for ActiveRecord serialization methods (to_xml, to_json)}
   s.email = %q{dimitrij@blacksquaremedia.com}
+  s.extra_rdoc_files = [
+    "README"
+  ]
   s.files = [
     ".gitignore",
      "Gemfile",
+     "Gemfile.lock",
+     "README",
      "Rakefile",
      "VERSION",
      "lib/serialization_scopes.rb",
