@@ -31,3 +31,7 @@ module SerializationScopes
   end
 
 end
+
+ActiveRecord::Base.class_eval do
+  include SerializationScopes
+end
