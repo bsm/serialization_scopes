@@ -1,12 +1,26 @@
 ENV["RAILS_ENV"] ||= 'test'
-$: << File.join(File.dirname(__FILE__),'..', 'lib')
+$:.unshift File.dirname(__FILE__)
+$:.unshift File.expand_path('../../lib', __FILE__)
 
 require 'rubygems'
+
+# Set up gems listed in the Gemfile.
+gemfile = File.expand_path('../../Gemfile', __FILE__)
+begin
+  require 'bundler'
+  Bundler.setup
+rescue Bundler::GemNotFound => e
+  STDERR.puts e.message
+  STDERR.puts "Try running `bundle install`."
+  exit!
+end
+
 require 'active_record'
+require 'serialization_scopes'
+require 'rspec'
 
-require File.join(File.dirname(__FILE__),'..', 'rails', 'init.rb')
-require 'spec/autorun'
-require 'spec/mocks'
+RSpec.configure do |c|
+  c.mock_with :rspec
+end
 
-ActiveRecord::Base.stub(:establish_connection)
-
+ActiveRecord::Base.include_root_in_json = false

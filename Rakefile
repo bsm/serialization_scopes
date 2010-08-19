@@ -2,13 +2,10 @@ require 'bundler'
 Bundler.setup
 
 require 'rake'
-require 'spec/rake/spectask'
+require 'rspec/mocks/version'
+require 'rspec/core/rake_task'
 
-desc 'Run specs.'
-Spec::Rake::SpecTask.new('spec') do |t|
-  t.spec_files = FileList['spec/**/*_spec.rb']
-  t.spec_opts = ["-c"]
-end
+RSpec::Core::RakeTask.new(:spec)
 
 desc 'Default: run specs.'
 task :default => :spec
@@ -22,7 +19,7 @@ begin
     gemspec.email = "dimitrij@blacksquaremedia.com"
     gemspec.homepage = "http://github.com/dim/serialization_scopes"
     gemspec.authors = ["Dimitrij Denissenko"]
-    gemspec.add_runtime_dependency "activerecord", ">= 2.3.0", '< 3.0.0'
+    gemspec.add_runtime_dependency "activerecord", "> 2.5.0"
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError

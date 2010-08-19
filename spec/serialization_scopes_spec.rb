@@ -2,9 +2,14 @@ require File.expand_path(File.dirname(__FILE__) + '/helper')
 
 describe SerializationScopes do
 
+  before do
+    ActiveRecord::Base.stub!(:establish_connection)
+  end
+
   class SomeModel < ActiveRecord::Base
     serialization_scope :default, :only => [:id, :name], :methods => :currency
     serialization_scope :admin, :only => [:id, :secret]
+    after_initialize    :set_defaults
 
     def self.columns
       @columns ||= [
@@ -14,7 +19,7 @@ describe SerializationScopes do
       ]
     end
 
-    def after_initialize
+    def set_defaults
       self.id     = 1
       self.name   = 'Any'
       self.secret = 'key'
@@ -28,8 +33,8 @@ describe SerializationScopes do
   it 'should constraint to_xml' do
     SomeModel.new.to_xml.should == %(<?xml version="1.0" encoding="UTF-8"?>
 <some-model>
-  <id type="integer">1</id>
   <name>Any</name>
+  <id type="integer">1</id>
   <currency>USD</currency>
 </some-model>
 )
