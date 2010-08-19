@@ -19,6 +19,7 @@ Gem::Specification.new do |s|
      "VERSION",
      "lib/serialization_scopes.rb",
      "rails/init.rb",
+     "serialization_scopes.gemspec",
      "spec/helper.rb",
      "spec/serialization_scopes_spec.rb"
   ]
