@@ -9,6 +9,8 @@ describe SerializationScopes do
   class SomeModel < ActiveRecord::Base
     serialization_scope :default, :only => [:id, :name], :methods => :currency
     serialization_scope :admin, :only => [:id, :secret]
+    serialization_scope :excepted, :except => [:secret]
+    serialization_scope :wow_root, :root => 'wow-root'
     after_initialize    :set_defaults
 
     def self.columns
@@ -64,5 +66,25 @@ describe SerializationScopes do
   it 'should fallback to default scope if invalid scope is given' do
     as_hash(:scope => :invalid).should == { "name" => "Any", "currency" => "USD", "id" => 1 }
   end
+
+  def options_for(custom_options)
+    SomeModel.send(:scoped_serialization_options, custom_options)
+  end
+
+  it 'should not relax the specified column list (when list is set by :only option)' do
+    options_for(:scope => :default, :only => [:id, :secret])[:only].should == [:id]
+    options_for(:scope => :default, :only => :secret)[:only].should == []
+    options_for(:scope => :default, :methods => [:some_method, :currency])[:methods].should == [:currency]
+  end
+
+  it 'should restrict the specified column list (when list is set by :except option)' do
+    options_for(:scope => :excepted, :except => :id)[:except].should == [:id, :secret]
+  end
+
+  it "should pass through options it doesn't know about" do
+    SomeModel.new.to_xml(:root => "wow-root").should include('<wow-root>')
+    SomeModel.new.to_xml(:scope => :wow_root).should include('<wow-root>')
+  end
+
 
 end

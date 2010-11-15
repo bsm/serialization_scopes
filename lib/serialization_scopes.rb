@@ -14,12 +14,19 @@ module SerializationScopes
     def scoped_serialization_options(options = {})
       name   = options.delete(:scope)
       scopes = name.present? && serialization_scopes[name.to_sym] ? serialization_scopes[name.to_sym] : serialization_scopes[:default]
-      scopes.each do |key, values|
-        options[key] ||= Array(values)
-        options[key] = Array(options[key]) & Array(values)
+      scopes.each do |key, scope_options|
+        custom_options = options[key]
+        options[key] = if key == :except
+          custom_options ? (Array.wrap(custom_options) + Array.wrap(scope_options)).uniq : Array.wrap(scope_options)
+        elsif [:only, :methods, :include].include?(key)
+          custom_options ? Array.wrap(custom_options) & Array.wrap(scope_options) : Array.wrap(scope_options)
+        else
+          custom_options ? custom_options : scope_options
+        end
       end if scopes
       options
     end
+
   end
 
   def to_xml(options = {})
