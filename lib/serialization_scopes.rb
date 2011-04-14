@@ -12,8 +12,9 @@ module SerializationScopes
     end
 
     def scoped_serialization_options(options = {})
-      name   = options.delete(:scope)
-      scopes = name.present? && serialization_scopes[name.to_sym] ? serialization_scopes[name.to_sym] : serialization_scopes[:default]
+      options ||= {}
+      name    = (options || {})[:scope]
+      scopes  = name.present? && serialization_scopes[name.to_sym] ? serialization_scopes[name.to_sym] : serialization_scopes[:default]
       scopes.each do |key, scope_options|
         custom_options = options[key]
         options[key] = if key == :except
@@ -33,7 +34,7 @@ module SerializationScopes
     super self.class.scoped_serialization_options(options)
   end
 
-  def to_json(options = {})
+  def as_json(options = {})
     super self.class.scoped_serialization_options(options)
   end
 

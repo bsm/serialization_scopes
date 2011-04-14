@@ -11,6 +11,7 @@ describe SerializationScopes do
     serialization_scope :admin, :only => [:id, :secret]
     serialization_scope :excepted, :except => [:secret]
     serialization_scope :wow_root, :root => 'wow-root'
+    serialization_scope :nested, :only => [:id, :name], :methods => :another
     after_initialize    :set_defaults
 
     def self.columns
@@ -29,6 +30,25 @@ describe SerializationScopes do
 
     def currency
       'USD'
+    end
+
+    def another
+      AnotherModel.new
+    end
+  end
+
+  class AnotherModel < ActiveRecord::Base
+    serialization_scope :default, :only => :another
+    after_initialize    :set_defaults
+
+    def self.columns
+      @columns ||= [
+        ActiveRecord::ConnectionAdapters::Column.new('another', nil, 'string')
+      ]
+    end
+
+    def set_defaults
+      self.another = 'val'
     end
   end
 
@@ -84,6 +104,24 @@ describe SerializationScopes do
   it "should pass through options it doesn't know about" do
     SomeModel.new.to_xml(:root => "wow-root").should include('<wow-root>')
     SomeModel.new.to_xml(:scope => :wow_root).should include('<wow-root>')
+  end
+
+  it 'should use default serialization scope when serialized as part of another object' do
+    i = SomeModel.new
+    ActiveSupport::JSON.decode([i].to_json).should == [{ "name" => "Any", "currency" => "USD", "id" => 1 }]
+    ActiveSupport::JSON.decode({:k => i}.to_json).should == { 'k' => { "name" => "Any", "currency" => "USD", "id" => 1 } }
+  end
+
+  it 'should not fail when passed nil options' do
+    options_for(nil).should == { :only => [:id, :name], :methods => [:currency] }
+  end
+
+  it 'should keep scope option' do
+    options_for(:scope => :nested)[:scope].should == :nested
+  end
+
+  it 'should pass the scope to the nested object so that they can use own settings' do
+    as_hash(:scope => :nested)['another'].should == { 'another' => 'val' }
   end
 
 
