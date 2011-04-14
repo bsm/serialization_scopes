@@ -18,8 +18,8 @@ begin
     gemspec.description = "Adds named scopes for ActiveRecord serialization methods (to_xml, to_json)"
     gemspec.email = "dimitrij@blacksquaremedia.com"
     gemspec.homepage = "http://github.com/dim/serialization_scopes"
-    gemspec.authors = ["Dimitrij Denissenko"]
-    gemspec.add_runtime_dependency "activerecord", "> 2.5.0"
+    gemspec.authors = ["Dimitrij Denissenko", "Evgeniy Dolzhenko"]
+    gemspec.add_runtime_dependency "activerecord", "> 3.0.0"
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
