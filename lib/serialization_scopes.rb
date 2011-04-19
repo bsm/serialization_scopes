@@ -42,4 +42,8 @@ end
 
 ActiveRecord::Base.class_eval do
   include SerializationScopes
-end
+end if defined?(ActiveRecord::Base)
+
+ActiveResource::Base.class_eval do
+  include SerializationScopes
+end if defined?(ActiveResource::Base)

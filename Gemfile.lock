@@ -10,6 +10,9 @@ GEM
       activesupport (= 3.0.6)
       arel (~> 2.0.2)
       tzinfo (~> 0.3.23)
+    activeresource (3.0.6)
+      activemodel (= 3.0.6)
+      activesupport (= 3.0.6)
     activesupport (3.0.6)
     arel (2.0.9)
     builder (2.1.2)
@@ -47,6 +50,7 @@ PLATFORMS
 
 DEPENDENCIES
   activerecord (~> 3.0.6)
+  activeresource (~> 3.0.6)
   jeweler
   rake
   rspec (~> 2.5)

@@ -16,6 +16,7 @@ rescue Bundler::GemNotFound => e
 end
 
 require 'active_record'
+require 'active_resource'
 require 'serialization_scopes'
 require 'rspec'
 

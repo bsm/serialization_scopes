@@ -52,6 +52,17 @@ describe SerializationScopes do
     end
   end
 
+  class SomeResource < ActiveResource::Base
+    self.site = 'http://example.com'
+
+    schema do
+      integer 'id'
+      string 'name', 'secret'
+    end
+
+    serialization_scope :default, :only => [:id, :name]
+  end
+
   it 'should constraint to_xml' do
     SomeModel.new.to_xml.should == %(<?xml version="1.0" encoding="UTF-8"?>
 <some-model>
@@ -122,6 +133,11 @@ describe SerializationScopes do
 
   it 'should pass the scope to the nested object so that they can use own settings' do
     as_hash(:scope => :nested)['another'].should == { 'another' => 'val' }
+  end
+
+  it 'should be enabled on ActiveResource models' do
+    json = SomeResource.new(:id => 1, :name => 'a name', :secret => 'some secret').to_json
+    ActiveSupport::JSON.decode(json).should == { 'some_resource' => { 'id' => 1, 'name' => 'a name' } }
   end
 
 
