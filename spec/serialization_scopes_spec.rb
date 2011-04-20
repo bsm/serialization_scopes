@@ -38,17 +38,23 @@ describe SerializationScopes do
   end
 
   class AnotherModel < ActiveRecord::Base
-    serialization_scope :default, :only => :another
+    serialization_scope :default, :only => :name
     after_initialize    :set_defaults
 
     def self.columns
       @columns ||= [
-        ActiveRecord::ConnectionAdapters::Column.new('another', nil, 'string')
+        ActiveRecord::ConnectionAdapters::Column.new('id', nil, 'integer'),
+        ActiveRecord::ConnectionAdapters::Column.new('name', nil, 'string')
       ]
     end
 
+    # Method override
+    def to_json(options={})
+      super(options)
+    end
+
     def set_defaults
-      self.another = 'val'
+      self.name = 'val'
     end
   end
 
@@ -73,8 +79,12 @@ describe SerializationScopes do
 )
   end
 
+  def serialize(object, options = {})
+    ActiveSupport::JSON.decode(object.to_json(options))
+  end
+
   def as_hash(options = {})
-    ActiveSupport::JSON.decode(SomeModel.new.to_json(options))
+    serialize(SomeModel.new, options)
   end
 
   it 'should constraint to_json' do
@@ -118,13 +128,11 @@ describe SerializationScopes do
   end
 
   it 'should use default serialization scope when serialized as part of another object' do
-    i = SomeModel.new
-    ActiveSupport::JSON.decode([i].to_json).should == [{ "name" => "Any", "currency" => "USD", "id" => 1 }]
-    ActiveSupport::JSON.decode({:k => i}.to_json).should == { 'k' => { "name" => "Any", "currency" => "USD", "id" => 1 } }
+    serialize(:k => SomeModel.new).should == { 'k' => { "name" => "Any", "currency" => "USD", "id" => 1 } }
   end
 
   it 'should not fail when passed nil options' do
-    options_for(nil).should == { :only => [:id, :name], :methods => [:currency] }
+    options_for(nil).should == { :only => [:id, :name], :methods => :currency }
   end
 
   it 'should keep scope option' do
@@ -132,12 +140,16 @@ describe SerializationScopes do
   end
 
   it 'should pass the scope to the nested object so that they can use own settings' do
-    as_hash(:scope => :nested)['another'].should == { 'another' => 'val' }
+    as_hash(:scope => :nested)['another'].should == { 'name' => 'val' }
   end
 
   it 'should be enabled on ActiveResource models' do
-    json = SomeResource.new(:id => 1, :name => 'a name', :secret => 'some secret').to_json
-    ActiveSupport::JSON.decode(json).should == { 'some_resource' => { 'id' => 1, 'name' => 'a name' } }
+    res = SomeResource.new(:id => 1, :name => 'a name', :secret => 'some secret')
+    serialize(res).should == { 'some_resource' => { 'id' => 1, 'name' => 'a name' } }
+  end
+
+  it 'should allow custom serialization methods' do
+    serialize(AnotherModel.new).should == {'name' => 'val'}
   end
 
   it 'should not tamper options' do
@@ -147,9 +159,9 @@ describe SerializationScopes do
   end
 
   it 'should not tamper nested options' do
-    original = { :only => [:secret] }
+    original = { :only => :secret }
     SomeModel.new.to_json(original)
-    original.should == { :only => [:secret] }
+    original.should == { :only => :secret }
   end
 
 end
