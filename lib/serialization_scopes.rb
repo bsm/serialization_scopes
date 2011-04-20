@@ -1,9 +1,9 @@
 module SerializationScopes
+  extend ActiveSupport::Concern
 
-  def self.included(base)
-    base.extend ClassMethods
-    base.class_inheritable_reader    :serialization_scopes
-    base.write_inheritable_attribute :serialization_scopes, {}
+  included do
+    class_inheritable_reader    :serialization_scopes
+    write_inheritable_attribute :serialization_scopes, {}
   end
 
   module ClassMethods
