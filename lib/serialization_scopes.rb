@@ -3,8 +3,6 @@ module SerializationScopes
 
   included do
     class_inheritable_accessor :serialization_scopes, :instance_reader => false, :instance_writer => false
-    alias_method_chain :to_xml, :scopes
-    alias_method_chain :as_json, :scopes
   end
 
   module ClassMethods
@@ -16,8 +14,7 @@ module SerializationScopes
 
     def scoped_serialization_options(options = {})
       options = options.try(:clone) || {}
-      name    = options[:scope].try(:to_sym)
-      scopes  = name.present? && serialization_scopes.key?(name) ? serialization_scopes[name] : serialization_scopes[:default]
+      scopes  = (serialization_scopes[options[:scope]] || serialization_scopes[:default]) unless options[:scope] == false
 
       scopes.each do |key, defaults|
         options[key] = options[key] ? Resolver.scope(key, defaults, options[key]) : defaults
@@ -31,13 +28,16 @@ module SerializationScopes
   module Resolver
 
     def self.scope(key, defaults, settings)
-      defaults = Array.wrap(defaults)
-      settings = Array.wrap(settings)
+      defaults = Array.wrap(defaults).map(&:to_s)
+      settings = Array.wrap(settings).map(&:to_s)
 
       case key
       when :except
         (settings + defaults).uniq
-      when :only, :methods, :include
+      when :only
+        result = settings & defaults
+        result.empty? ? defaults : result
+      when :methods, :include
         settings & defaults
       else
         settings
@@ -46,12 +46,12 @@ module SerializationScopes
 
   end
 
-  def to_xml_with_scopes(options = {})
-    to_xml_without_scopes self.class.scoped_serialization_options(options)
+  def to_xml(options = {})
+    super self.class.scoped_serialization_options(options)
   end
 
-  def as_json_with_scopes(options = {})
-    as_json_without_scopes self.class.scoped_serialization_options(options)
+  def serializable_hash(options = {})
+    super self.class.scoped_serialization_options(options)
   end
 
 end
