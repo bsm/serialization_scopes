@@ -2,7 +2,7 @@ module SerializationScopes
   extend ActiveSupport::Concern
 
   included do
-    class_attribute :serialization_scopes, :instance_writer => false
+    class_inheritable_accessor :serialization_scopes, :instance_reader => false, :instance_writer => false
     alias_method_chain :to_xml, :scopes
     alias_method_chain :as_json, :scopes
   end

@@ -37,6 +37,14 @@ describe SerializationScopes do
     end
   end
 
+  class SubModel < SomeModel
+    serialization_scope :admin, :only => [:id, :secret, :token]
+
+    def token
+      "ABCD"
+    end
+  end
+
   class AnotherModel < ActiveRecord::Base
     serialization_scope :default, :only => :name
     after_initialize    :set_defaults
@@ -152,6 +160,10 @@ describe SerializationScopes do
     serialize(AnotherModel.new).should == {'name' => 'val'}
   end
 
+  it 'should inherit scopes correctly' do
+    serialize(AnotherModel.new).should == {'name' => 'val'}
+  end
+
   it 'should not tamper options' do
     original = {}
     SomeModel.new.to_json(original)
@@ -159,9 +171,8 @@ describe SerializationScopes do
   end
 
   it 'should not tamper nested options' do
-    original = { :only => :secret }
-    SomeModel.new.to_json(original)
-    original.should == { :only => :secret }
+    SomeModel.serialization_scopes[:admin].should == {:only=>[:id, :secret]}
+    SubModel.serialization_scopes[:admin].should == {:only=>[:id, :secret, :token]}
   end
 
 end
