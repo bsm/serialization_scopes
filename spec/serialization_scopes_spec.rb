@@ -140,5 +140,16 @@ describe SerializationScopes do
     ActiveSupport::JSON.decode(json).should == { 'some_resource' => { 'id' => 1, 'name' => 'a name' } }
   end
 
+  it 'should not tamper options' do
+    original = {}
+    SomeModel.new.to_json(original)
+    original.should == {}
+  end
+
+  it 'should not tamper nested options' do
+    original = { :only => [:secret] }
+    SomeModel.new.to_json(original)
+    original.should == { :only => [:secret] }
+  end
 
 end

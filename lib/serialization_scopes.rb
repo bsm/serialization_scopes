@@ -16,6 +16,7 @@ module SerializationScopes
       options ||= {}
       name    = (options || {})[:scope]
       scopes  = name.present? && serialization_scopes[name.to_sym] ? serialization_scopes[name.to_sym] : serialization_scopes[:default]
+      options = options.dup
       scopes.each do |key, scope_options|
         custom_options = options[key]
         options[key] = if key == :except
