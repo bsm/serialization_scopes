@@ -1,14 +1,17 @@
+require 'serialization_scopes/resolver'
+
 module SerializationScopes
   extend ActiveSupport::Concern
 
   included do
-    class_inheritable_accessor :serialization_scopes, :instance_reader => false, :instance_writer => false
+    class_inheritable_reader    :serialization_scopes, :instance_reader => false
+    write_inheritable_attribute :serialization_scopes, {}
   end
 
   module ClassMethods
 
     def serialization_scope(name, options = {})
-      self.serialization_scopes ||= {}
+      include InstanceExtensions unless included_modules.include?(InstanceExtensions)
       serialization_scopes[name.to_sym] = options
     end
 
@@ -25,35 +28,18 @@ module SerializationScopes
 
   end
 
-  module Resolver
+  module InstanceExtensions
+    extend ActiveSupport::Concern
 
-    def self.scope(key, defaults, settings)
-      defaults = Array.wrap(defaults).map(&:to_s)
-      settings = Array.wrap(settings).map(&:to_s)
+    def to_xml(options = {})
+      super self.class.scoped_serialization_options(options)
+    end
 
-      case key
-      when :except
-        (settings + defaults).uniq
-      when :only
-        result = settings & defaults
-        result.empty? ? defaults : result
-      when :methods, :include
-        settings & defaults
-      else
-        settings
-      end
+    def serializable_hash(options = {})
+      super self.class.scoped_serialization_options(options)
     end
 
   end
-
-  def to_xml(options = {})
-    super self.class.scoped_serialization_options(options)
-  end
-
-  def serializable_hash(options = {})
-    super self.class.scoped_serialization_options(options)
-  end
-
 end
 
 ActiveRecord::Base.class_eval do
