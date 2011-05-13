@@ -19,6 +19,7 @@ require 'active_record'
 require 'active_resource'
 require 'serialization_scopes'
 require 'rspec'
+require File.expand_path(File.dirname(__FILE__) + '/helper_models')
 
 RSpec.configure do |c|
   c.mock_with :rspec

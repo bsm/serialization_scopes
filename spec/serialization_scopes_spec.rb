@@ -1,92 +1,50 @@
-require File.expand_path(File.dirname(__FILE__) + '/helper')
+require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe SerializationScopes do
 
   before do
-    ActiveRecord::Base.stub!(:establish_connection)
+    conn = mock("Connection")
+    conn.stub(:quote_table_name).and_return {|n| n }
+    conn.stub(:quote).and_return {|n| n }
+
+    ActiveRecord::Base.stub!(:establish_connection => nil, :connection => conn)
   end
 
-  class SomeModel < ActiveRecord::Base
-    serialization_scope :default, :only => [:id, :name], :methods => :currency
-    serialization_scope :admin, :only => [:id, :secret]
-    serialization_scope :excepted, :except => [:secret]
-    serialization_scope :wow_root, :root => 'wow-root'
-    serialization_scope :nested, :only => [:id, :name], :methods => :another
-    after_initialize    :set_defaults
-
-    def self.columns
-      @columns ||= [
-        ActiveRecord::ConnectionAdapters::Column.new('id', nil, 'integer'),
-        ActiveRecord::ConnectionAdapters::Column.new('name', nil, 'string'),
-        ActiveRecord::ConnectionAdapters::Column.new('secret', nil, 'string')
-      ]
-    end
-
-    def set_defaults
-      self.id     = 1
-      self.name   = 'Any'
-      self.secret = 'key'
-    end
-
-    def currency
-      'USD'
-    end
-
-    def another
-      AnotherModel.new
-    end
-  end
-
-  class AnotherModel < ActiveRecord::Base
-    serialization_scope :default, :only => :another
-    after_initialize    :set_defaults
-
-    def self.columns
-      @columns ||= [
-        ActiveRecord::ConnectionAdapters::Column.new('another', nil, 'string')
-      ]
-    end
-
-    def set_defaults
-      self.another = 'val'
-    end
-  end
-
-  class SomeResource < ActiveResource::Base
-    self.site = 'http://example.com'
-
-    schema do
-      integer 'id'
-      string 'name', 'secret'
-    end
-
-    serialization_scope :default, :only => [:id, :name]
-  end
-
-  it 'should constraint to_xml' do
-    SomeModel.new.to_xml.should == %(<?xml version="1.0" encoding="UTF-8"?>
-<some-model>
-  <name>Any</name>
-  <id type="integer">1</id>
-  <currency>USD</currency>
-</some-model>
-)
+  def serialize(object, options = {})
+    ActiveSupport::JSON.decode(object.to_json(options))
   end
 
   def as_hash(options = {})
-    ActiveSupport::JSON.decode(SomeModel.new.to_json(options))
+    serialize(SomeModel.new, options)
   end
 
-  it 'should constraint to_json' do
+  def options_for(custom_options)
+    SomeModel.send(:scoped_serialization_options, custom_options)
+  end
+
+  it 'should scope to_xml' do
+    Hash.from_xml(SomeModel.new.to_xml).should == { "some_model" => { "name" => "Any", "currency" => "USD", "id" => 1 }}
+  end
+
+  it 'should scope to_json' do
     as_hash.should == { "name" => "Any", "currency" => "USD", "id" => 1 }
   end
 
-  it 'should allow further restrictions' do
+  it 'should apply default scope' do
+    as_hash.should == { "name" => "Any", "currency" => "USD", "id" => 1 }
+    serialize(AnotherModel.new).should == { "description" => "val" }
+  end
+
+  it 'should allow to bypass default scope' do
+    as_hash(:scope => false).should == { "name" => "Any", "id" => 1, "secret" => "key" }
+  end
+
+  it 'should allow to apply additional restrictions' do
     as_hash(:only => :name).should == { "name" => "Any", "currency" => "USD" }
     as_hash(:methods => []).should == { "name" => "Any", "id" => 1 }
   end
 
-  it 'should deny extensions if (default) scope is selected' do
+  it 'should not allow loosening the scope' do
     as_hash(:only => [:id, :secret]).should == { "id" => 1, "currency" => "USD" }
   end
 
@@ -98,18 +56,16 @@ describe SerializationScopes do
     as_hash(:scope => :invalid).should == { "name" => "Any", "currency" => "USD", "id" => 1 }
   end
 
-  def options_for(custom_options)
-    SomeModel.send(:scoped_serialization_options, custom_options)
+  it "should not loosen the scoped 'only' attributes" do
+    options_for(:scope => :default, :only => :secret)[:only].should == ["id", "name"]
   end
 
-  it 'should not relax the specified column list (when list is set by :only option)' do
-    options_for(:scope => :default, :only => [:id, :secret])[:only].should == [:id]
-    options_for(:scope => :default, :only => :secret)[:only].should == []
-    options_for(:scope => :default, :methods => [:some_method, :currency])[:methods].should == [:currency]
+  it "should not loosen scoped 'methods'" do
+    options_for(:scope => :default, :methods => [:some_method, :currency])[:methods].should == ["currency"]
   end
 
-  it 'should restrict the specified column list (when list is set by :except option)' do
-    options_for(:scope => :excepted, :except => :id)[:except].should == [:id, :secret]
+  it "should retain scoped 'expept' attributes" do
+    options_for(:scope => :excepted, :except => :id)[:except].should == ["id", "secret"]
   end
 
   it "should pass through options it doesn't know about" do
@@ -118,13 +74,7 @@ describe SerializationScopes do
   end
 
   it 'should use default serialization scope when serialized as part of another object' do
-    i = SomeModel.new
-    ActiveSupport::JSON.decode([i].to_json).should == [{ "name" => "Any", "currency" => "USD", "id" => 1 }]
-    ActiveSupport::JSON.decode({:k => i}.to_json).should == { 'k' => { "name" => "Any", "currency" => "USD", "id" => 1 } }
-  end
-
-  it 'should not fail when passed nil options' do
-    options_for(nil).should == { :only => [:id, :name], :methods => [:currency] }
+    serialize(:k => SomeModel.new).should == { 'k' => { "name" => "Any", "currency" => "USD", "id" => 1 } }
   end
 
   it 'should keep scope option' do
@@ -132,24 +82,43 @@ describe SerializationScopes do
   end
 
   it 'should pass the scope to the nested object so that they can use own settings' do
-    as_hash(:scope => :nested)['another'].should == { 'another' => 'val' }
+    as_hash(:scope => :nested)['another'].should == { 'description' => 'val' }
+  end
+
+  it 'should correctly apply scopes to nested includes' do
+    model = SomeModel.new
+    model.stub!(:others => [AnotherModel.new])
+    serialize(model, :include => :others).should == { "name"=>"Any", "id"=>1, "currency"=>"USD", "others"=>[{ "description" => "val" }] }
   end
 
   it 'should be enabled on ActiveResource models' do
-    json = SomeResource.new(:id => 1, :name => 'a name', :secret => 'some secret').to_json
-    ActiveSupport::JSON.decode(json).should == { 'some_resource' => { 'id' => 1, 'name' => 'a name' } }
+    res = SomeResource.new(:id => 1, :name => 'a name', :secret => 'some secret')
+    serialize(res).should == { 'some_resource' => { 'id' => 1, 'name' => 'a name' } }
   end
 
-  it 'should not tamper options' do
-    original = {}
-    SomeModel.new.to_json(original)
-    original.should == {}
+  it 'should inherit serialization options correctly' do
+    SomeModel.serialization_scopes[:admin].should == {:only=>[:id, :secret]}
+    SubModel.serialization_scopes[:admin].should == {:only=>[:id, :secret, :token]}
   end
 
-  it 'should not tamper nested options' do
-    original = { :only => [:secret] }
-    SomeModel.new.to_json(original)
-    original.should == { :only => [:secret] }
+  describe "option arguments" do
+
+    it 'should not fail when passed nil options' do
+      options_for(nil).should == { :only => [:id, :name], :methods => :currency }
+    end
+
+    it 'should not tamper options' do
+      original = {}
+      SomeModel.new.to_json(original)
+      original.should == {}
+    end
+
+    it 'should not tamper nested options' do
+      original = { :only => :id }
+      SomeModel.new.to_json(original)
+      original.should == { :only => :id }
+    end
+
   end
 
 end

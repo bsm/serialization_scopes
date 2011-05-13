@@ -1,44 +1,45 @@
-module SerializationScopes
+require 'serialization_scopes/resolver'
 
-  def self.included(base)
-    base.extend ClassMethods
-    base.class_inheritable_reader    :serialization_scopes
-    base.write_inheritable_attribute :serialization_scopes, {}
+module SerializationScopes
+  extend ActiveSupport::Concern
+
+  included do
+    class_inheritable_reader    :serialization_scopes, :instance_reader => false
+    write_inheritable_attribute :serialization_scopes, {}
   end
 
   module ClassMethods
+
     def serialization_scope(name, options = {})
+      include InstanceExtensions unless included_modules.include?(InstanceExtensions)
       serialization_scopes[name.to_sym] = options
     end
 
     def scoped_serialization_options(options = {})
-      options ||= {}
-      name    = (options || {})[:scope]
-      scopes  = name.present? && serialization_scopes[name.to_sym] ? serialization_scopes[name.to_sym] : serialization_scopes[:default]
-      options = options.dup
-      scopes.each do |key, scope_options|
-        custom_options = options[key]
-        options[key] = if key == :except
-          custom_options ? (Array.wrap(custom_options) + Array.wrap(scope_options)).uniq : Array.wrap(scope_options)
-        elsif [:only, :methods, :include].include?(key)
-          custom_options ? Array.wrap(custom_options) & Array.wrap(scope_options) : Array.wrap(scope_options)
-        else
-          custom_options ? custom_options : scope_options
-        end
+      options = options.try(:clone) || {}
+      scopes  = (serialization_scopes[options[:scope]] || serialization_scopes[:default]) unless options[:scope] == false
+
+      scopes.each do |key, defaults|
+        options[key] = options[key] ? Resolver.scope(key, defaults, options[key]) : defaults
       end if scopes
+
       options
     end
 
   end
 
-  def to_xml(options = {})
-    super self.class.scoped_serialization_options(options)
-  end
+  module InstanceExtensions
+    extend ActiveSupport::Concern
 
-  def as_json(options = {})
-    super self.class.scoped_serialization_options(options)
-  end
+    def to_xml(options = {})
+      super self.class.scoped_serialization_options(options)
+    end
 
+    def serializable_hash(options = {})
+      super self.class.scoped_serialization_options(options)
+    end
+
+  end
 end
 
 ActiveRecord::Base.class_eval do

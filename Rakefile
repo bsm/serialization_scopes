@@ -9,18 +9,3 @@ RSpec::Core::RakeTask.new(:spec)
 
 desc 'Default: run specs.'
 task :default => :spec
-
-begin
-  require 'jeweler'
-  Jeweler::Tasks.new do |gemspec|
-    gemspec.name = "serialization_scopes"
-    gemspec.summary = "Named scopes for ActiveRecord serialization methods (to_xml, to_json)"
-    gemspec.description = "Adds named scopes for ActiveRecord serialization methods (to_xml, to_json)"
-    gemspec.email = "dimitrij@blacksquaremedia.com"
-    gemspec.homepage = "http://github.com/dim/serialization_scopes"
-    gemspec.authors = ["Dimitrij Denissenko", "Evgeniy Dolzhenko"]
-    gemspec.add_runtime_dependency "activerecord", "> 3.0.0"
-  end
-  Jeweler::GemcutterTasks.new
-rescue LoadError
-end
