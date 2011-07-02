@@ -71,7 +71,7 @@ module SerializationScopes # :nodoc:
           end
 
           def serialized
-            @serialized ||= ActiveSupport::JSON.decode(@subject.to_json(:scope => @scope))
+            @serialized ||= Hash.from_xml(@subject.to_xml(:scope => @scope))
           end
 
           def expectation

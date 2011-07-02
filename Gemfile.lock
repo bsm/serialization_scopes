@@ -1,46 +1,38 @@
 PATH
   remote: .
   specs:
-    serialization_scopes (0.9.1)
+    serialization_scopes (0.9.2)
 
 GEM
   remote: http://rubygems.org/
   specs:
-    activemodel (3.0.7)
-      activesupport (= 3.0.7)
+    activemodel (3.0.9)
+      activesupport (= 3.0.9)
       builder (~> 2.1.2)
       i18n (~> 0.5.0)
-    activerecord (3.0.7)
-      activemodel (= 3.0.7)
-      activesupport (= 3.0.7)
-      arel (~> 2.0.2)
+    activerecord (3.0.9)
+      activemodel (= 3.0.9)
+      activesupport (= 3.0.9)
+      arel (~> 2.0.10)
       tzinfo (~> 0.3.23)
-    activeresource (3.0.7)
-      activemodel (= 3.0.7)
-      activesupport (= 3.0.7)
-    activesupport (3.0.7)
-    arel (2.0.9)
+    activeresource (3.0.9)
+      activemodel (= 3.0.9)
+      activesupport (= 3.0.9)
+    activesupport (3.0.9)
+    arel (2.0.10)
     builder (2.1.2)
-    columnize (0.3.2)
     diff-lcs (1.1.2)
     i18n (0.5.0)
-    linecache (0.43)
-    rake (0.8.7)
-    rspec (2.5.0)
-      rspec-core (~> 2.5.0)
-      rspec-expectations (~> 2.5.0)
-      rspec-mocks (~> 2.5.0)
-    rspec-core (2.5.1)
-    rspec-expectations (2.5.0)
+    rake (0.9.2)
+    rspec (2.6.0)
+      rspec-core (~> 2.6.0)
+      rspec-expectations (~> 2.6.0)
+      rspec-mocks (~> 2.6.0)
+    rspec-core (2.6.4)
+    rspec-expectations (2.6.0)
       diff-lcs (~> 1.1.2)
-    rspec-mocks (2.5.0)
-    ruby-debug (0.10.4)
-      columnize (>= 0.1)
-      ruby-debug-base (~> 0.10.4.0)
-    ruby-debug-base (0.10.4)
-      linecache (>= 0.3)
-    ruby-debug-base (0.10.4-java)
-    tzinfo (0.3.26)
+    rspec-mocks (2.6.0)
+    tzinfo (0.3.29)
 
 PLATFORMS
   java
@@ -50,6 +42,5 @@ DEPENDENCIES
   activerecord (~> 3.0.0)
   activeresource (~> 3.0.0)
   rake
-  rspec (~> 2.5.0)
-  ruby-debug
+  rspec
   serialization_scopes!
