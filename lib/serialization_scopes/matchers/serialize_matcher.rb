@@ -63,11 +63,7 @@ module SerializationScopes # :nodoc:
           end
 
           def attributes
-            if @to
-              serialized[root_name] ? serialized[root_name].keys : []
-            else
-              serialized.keys
-            end
+            serialized[root_name] ? serialized[root_name].keys : []
           end
 
           def serialized
