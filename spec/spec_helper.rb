@@ -21,8 +21,4 @@ require 'serialization_scopes'
 require 'rspec'
 require File.expand_path(File.dirname(__FILE__) + '/helper_models')
 
-RSpec.configure do |c|
-  c.mock_with :rspec
-end
-
 ActiveRecord::Base.include_root_in_json = false

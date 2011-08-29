@@ -1,4 +1,5 @@
 require 'serialization_scopes/resolver'
+require 'serialization_scopes/responder'
 
 module SerializationScopes
   extend ActiveSupport::Concern
