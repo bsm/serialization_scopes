@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
 
   s.authors     = ["Dimitrij Denissenko", "Evgeniy Dolzhenko"]
   s.email       = "info@blacksquaremedia.com"
-  s.homepage    = "http://github.com/dim/serialization_scopes"
+  s.homepage    = "http://github.com/bsm/serialization_scopes"
 
   s.require_path = 'lib'
   s.files        = Dir['VERSION', 'README', 'lib/**/*', 'rails/**/*']
