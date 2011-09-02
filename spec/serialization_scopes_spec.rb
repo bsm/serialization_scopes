@@ -2,20 +2,24 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe SerializationScopes do
 
-  before do
-    conn = mock("Connection")
-    conn.stub(:quote_table_name).and_return {|n| n }
-    conn.stub(:quote).and_return {|n| n }
-
-    ActiveRecord::Base.stub!(:establish_connection => nil, :connection => conn)
+  let :some_record do
+    SomeModel.create! :name => 'Any', :secret => "key"
   end
 
-  def serialize(object, options = {})
-    ActiveSupport::JSON.decode(object.to_json(options))
+  let :other_record do
+    OtherModel.create! :description => 'Other', :some_id => some_record.id
   end
 
-  def as_hash(options = {})
-    serialize(SomeModel.new, options)
+  let :some_resource do
+    SomeResource.new :id => 1, :name => 'a name', :secret => 'some secret'
+  end
+
+  def via_xml(record, options = {})
+    Hash.from_xml record.to_xml(options)
+  end
+
+  def via_json(record, options = {})
+    ActiveSupport::JSON.decode record.to_json(options)
   end
 
   def options_for(custom_options)
@@ -23,102 +27,82 @@ describe SerializationScopes do
   end
 
   it 'should scope to_xml' do
-    Hash.from_xml(SomeModel.new.to_xml).should == { "some_model" => { "name" => "Any", "currency" => "USD", "id" => 1 }}
+    via_xml(some_record).should == { "some_model" => { "name" => "Any", "currency" => "USD", "id" => some_record.id }}
   end
 
   it 'should scope to_json' do
-    as_hash.should == { "name" => "Any", "currency" => "USD", "id" => 1 }
+    via_json(some_record).should == { "name" => "Any", "currency" => "USD", "id" => some_record.id }
   end
 
   it 'should apply default scope' do
-    as_hash.should == { "name" => "Any", "currency" => "USD", "id" => 1 }
-    serialize(AnotherModel.new).should == { "description" => "val" }
+    via_json(other_record).should == { "description" => "Other" }
   end
 
   it 'should allow to bypass default scope' do
-    as_hash(:scope => false).should == { "name" => "Any", "id" => 1, "secret" => "key" }
+    via_json(some_record, :scope => false).should == { "name" => "Any", "id" => some_record.id, "secret" => "key" }
   end
 
   it 'should allow to apply additional restrictions' do
-    as_hash(:only => :name).should == { "name" => "Any", "currency" => "USD" }
-    as_hash(:methods => []).should == { "name" => "Any", "id" => 1 }
+    via_json(some_record, :only => :name).should == { "name" => "Any", "currency" => "USD" }
+    via_json(some_record, :methods => []).should == { "name" => "Any", "id" => some_record.id }
   end
 
-  it 'should not allow loosening the scope' do
-    as_hash(:only => [:id, :secret]).should == { "id" => 1, "currency" => "USD" }
+  it 'should not allow loosening scopes' do
+    via_json(some_record, :only => [:id, :secret]).keys.should_not include("secret")
+    via_json(some_record, :methods => [:discount, :currency]).keys.should_not include("discount")
+    via_json(some_record, :scope => :excepted, :except => :id).keys.should_not include("secret")
   end
 
   it 'should have separate behaviours for different scopes' do
-    as_hash(:scope => :admin).should == { "id" => 1, "secret" => "key" }
+    via_json(some_record, :scope => :admin).should == { "id" => some_record.id, "secret" => "key" }
   end
 
   it 'should fallback to default scope if invalid scope is given' do
-    as_hash(:scope => :invalid).should == { "name" => "Any", "currency" => "USD", "id" => 1 }
-  end
-
-  it "should not loosen the scoped 'only' attributes" do
-    options_for(:scope => :default, :only => :secret)[:only].should == ["id", "name"]
-  end
-
-  it "should not loosen scoped 'methods'" do
-    options_for(:scope => :default, :methods => [:some_method, :currency])[:methods].should == ["currency"]
-  end
-
-  it "should retain scoped 'expept' attributes" do
-    options_for(:scope => :excepted, :except => :id)[:except].should == ["id", "secret"]
+    via_json(some_record, :scope => :invalid).should == { "name" => "Any", "currency" => "USD", "id" => some_record.id }
   end
 
   it "should pass through options it doesn't know about" do
-    SomeModel.new.to_xml(:root => "wow-root").should include('<wow-root>')
-    SomeModel.new.to_xml(:scope => :wow_root).should include('<wow-root>')
+    some_record.to_xml(:root => "wow-root").should include('<wow-root>')
+    some_record.to_xml(:scope => :wow_root).should include('<wow-root>')
   end
 
   it 'should use default serialization scope when serialized as part of another object' do
-    serialize(:k => SomeModel.new).should == { 'k' => { "name" => "Any", "currency" => "USD", "id" => 1 } }
-  end
-
-  it 'should keep scope option' do
-    options_for(:scope => :nested)[:scope].should == :nested
+    via_json(:k => some_record).should == { 'k' => { "name" => "Any", "currency" => "USD", "id" => some_record.id } }
   end
 
   it 'should pass the scope to the nested object so that they can use own settings' do
-    as_hash(:scope => :nested)['another'].should == { 'description' => 'val' }
+    via_json(some_record, :scope => :nested)['another'].should == { 'description' => 'Random' }
   end
 
   it 'should correctly apply scopes to nested includes' do
-    model = SomeModel.new
-    model.stub!(:others => [AnotherModel.new])
-    serialize(model, :include => :others).should == { "name"=>"Any", "id"=>1, "currency"=>"USD", "others"=>[{ "description" => "val" }] }
-  end
-
-  it 'should be enabled on ActiveResource models' do
-    res = SomeResource.new(:id => 1, :name => 'a name', :secret => 'some secret')
-    serialize(res).should == { 'some_resource' => { 'id' => 1, 'name' => 'a name' } }
+    some_record.others.create :description => "New"
+    via_json(some_record, :include => :others).should == { "name"=>"Any", "id"=>1, "currency"=>"USD", "others"=>[{ "description" => "New" }] }
   end
 
   it 'should inherit serialization options correctly' do
-    SomeModel.serialization_scopes[:admin].should == {:only=>[:id, :secret]}
-    SubModel.serialization_scopes[:admin].should == {:only=>[:id, :secret, :token]}
+    SomeModel.send(:serialization_scopes)[:admin].should == {:only=>[:id, :secret]}
+    SubModel.send(:serialization_scopes)[:admin].should == {:only=>[:id, :secret, :token]}
   end
 
-  describe "option arguments" do
+  it 'should be enabled on ActiveResource models' do
+    via_json(some_resource).should == { 'some_resource' => { 'id' => 1, 'name' => 'a name' } }
+  end
+
+  describe "additional option arguments" do
 
     it 'should not fail when passed nil options' do
-      options_for(nil).should == { :only => [:id, :name], :methods => :currency }
+      some_record.to_json(nil)
     end
 
     it 'should not tamper options' do
       original = {}
-      SomeModel.new.to_json(original)
-      original.should == {}
+      lambda { some_record.to_json(original) }.should_not change { original }
     end
 
     it 'should not tamper nested options' do
-      original = { :only => :id }
-      SomeModel.new.to_json(original)
-      original.should == { :only => :id }
+      original = { :only => :id, :key => { :other => :value } }
+      lambda { some_record.to_json(original) }.should_not change { original }
     end
 
   end
-
 end

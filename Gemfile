@@ -1,11 +1,13 @@
 source 'http://rubygems.org'
 
 gemspec
+# gem "activemodel", "~> 3.0.0"
 
 group :development, :test do
-  gem "activerecord", '~> 3.0.0'
-  gem "activeresource", '~> 3.0.0'
+  gem "activerecord"
+  gem "activeresource"
   gem "rspec"
   gem "rake"
+  gem "sqlite3-ruby"
 end
 

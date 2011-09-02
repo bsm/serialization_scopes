@@ -1,13 +1,23 @@
-class SomeModel < ActiveRecord::Base
-  def self.columns
-    @columns ||= [
-      ActiveRecord::ConnectionAdapters::Column.new('id', nil, 'integer'),
-      ActiveRecord::ConnectionAdapters::Column.new('name', nil, 'string'),
-      ActiveRecord::ConnectionAdapters::Column.new('secret', nil, 'string')
-    ]
-  end
+ActiveRecord::Base.configurations["test"] = { 'adapter' => 'sqlite3', 'database' => ":memory:" }
 
-  has_many :others, :class_name => 'AnotherModel', :foreign_key => :some_id
+RSpec.configure do |c|
+  c.before(:each) do
+    base = ActiveRecord::Base
+    base.establish_connection(:test)
+    base.connection.create_table :some_models do |t|
+      t.string :name
+      t.string :type
+      t.string :secret
+    end
+    base.connection.create_table :other_models do |t|
+      t.integer :some_id
+      t.string :description
+    end
+  end
+end
+
+class SomeModel < ActiveRecord::Base
+  has_many :others, :class_name => 'OtherModel', :foreign_key => :some_id
 
   serialization_scope :default, :only => [:id, :name], :methods => :currency
   serialization_scope :admin, :only => [:id, :secret]
@@ -15,20 +25,16 @@ class SomeModel < ActiveRecord::Base
   serialization_scope :wow_root, :root => 'wow-root'
   serialization_scope :nested, :only => [:id, :name], :methods => :another
 
-  after_initialize    :set_defaults
-
-  def set_defaults
-    self.id     = 1
-    self.name   = 'Any'
-    self.secret = 'key'
-  end
-
   def currency
     'USD'
   end
 
+  def discount
+    20
+  end
+
   def another
-    AnotherModel.new
+    @another ||= others.create! :description => "Random"
   end
 end
 
@@ -40,23 +46,10 @@ class SubModel < SomeModel
   end
 end
 
-class AnotherModel < ActiveRecord::Base
-  def self.columns
-    @columns ||= [
-      ActiveRecord::ConnectionAdapters::Column.new('id', nil, 'integer'),
-      ActiveRecord::ConnectionAdapters::Column.new('some_id', nil, 'integer'),
-      ActiveRecord::ConnectionAdapters::Column.new('description', nil, 'string')
-    ]
-  end
-
+class OtherModel < ActiveRecord::Base
   belongs_to :some, :class_name => 'SomeModel', :foreign_key => :some_id
 
   serialization_scope :default, :only => :description
-  after_initialize    :set_defaults
-
-  def set_defaults
-    self.description = 'val'
-  end
 end
 
 class SomeResource < ActiveResource::Base

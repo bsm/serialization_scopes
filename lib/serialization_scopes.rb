@@ -3,11 +3,6 @@ require 'serialization_scopes/resolver'
 module SerializationScopes
   extend ActiveSupport::Concern
 
-  included do
-    class_inheritable_reader    :serialization_scopes, :instance_reader => false
-    write_inheritable_attribute :serialization_scopes, {}
-  end
-
   module ClassMethods
 
     def serialization_scope(name, options = {})
@@ -25,6 +20,12 @@ module SerializationScopes
 
       options
     end
+
+    private
+
+      def serialization_scopes
+        @_serialization_scopes ||= {}
+      end
 
   end
 
