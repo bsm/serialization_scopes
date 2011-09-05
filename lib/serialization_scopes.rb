@@ -22,16 +22,15 @@ module SerializationScopes
       options
     end
 
-    private
+    protected
 
       def serialization_scopes
-        @_serialization_scopes ||= {}
+        @_serialization_scopes ||= superclass.respond_to?(:serialization_scopes) ? superclass.send(:serialization_scopes).clone : {}
       end
 
   end
 
   module InstanceExtensions
-    extend ActiveSupport::Concern
 
     def to_xml(options = {})
       super self.class.scoped_serialization_options(options)

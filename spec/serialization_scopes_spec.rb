@@ -6,6 +6,10 @@ describe SerializationScopes do
     SomeModel.create! :name => 'Any', :secret => "key"
   end
 
+  let :sub_record do
+    SubModel.create! :name => 'Any', :secret => "key"
+  end
+
   let :other_record do
     OtherModel.create! :description => 'Other', :some_id => some_record.id
   end
@@ -80,8 +84,15 @@ describe SerializationScopes do
   end
 
   it 'should inherit serialization options correctly' do
+    SomeModel.send(:serialization_scopes)[:default].should == {:only=>[:id, :name], :methods=>:currency}
+    SubModel.send(:serialization_scopes)[:default].should == {:only=>[:id, :name], :methods=>:currency}
+
     SomeModel.send(:serialization_scopes)[:admin].should == {:only=>[:id, :secret]}
     SubModel.send(:serialization_scopes)[:admin].should == {:only=>[:id, :secret, :token]}
+  end
+
+  it 'should correctly inherit serialization' do
+    via_json(sub_record).should == { "name"=>"Any", "id"=>1, "currency"=>"USD" }
   end
 
   it 'should be enabled on ActiveResource models' do
