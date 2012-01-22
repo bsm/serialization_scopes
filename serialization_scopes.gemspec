@@ -17,10 +17,10 @@ Gem::Specification.new do |s|
   s.require_path = 'lib'
   s.files        = Dir['VERSION', 'README', 'lib/**/*', 'rails/**/*']
 
-  s.add_dependency 'activemodel', '>= 3.0.0', '< 3.2.0'
+  s.add_dependency 'activemodel', '>= 3.0.0', '< 3.3.0'
 
-  s.add_development_dependency 'activerecord', '>= 3.0.0', '< 3.2.0'
-  s.add_development_dependency 'activeresource', '>= 3.0.0', '< 3.2.0'
+  s.add_development_dependency 'activerecord', '>= 3.0.0', '< 3.3.0'
+  s.add_development_dependency 'activeresource', '>= 3.0.0', '< 3.3.0'
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'sqlite3-ruby'
