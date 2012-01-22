@@ -57,7 +57,7 @@ And then you need to configure your application to use it:
     end
 
 In your controllers, then simply define a protected `serialization_scope`
-method. Example:
+method. It will be automatically applied as part of `respond_with`. Example:
 
     # app/controllers/articles_controller.rb
     class ArticlesController < ApplicationController
