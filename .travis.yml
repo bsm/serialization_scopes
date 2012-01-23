@@ -6,3 +6,7 @@ gemfile:
   - Gemfile
   - Gemfile.3.1.x
   - Gemfile.3.0.x
+matrix:
+  exclude:
+    - rvm: ree
+      gemfile: Gemfile
