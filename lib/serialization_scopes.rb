@@ -40,6 +40,15 @@ module SerializationScopes
       super self.class.scoped_serialization_options(options)
     end
 
+    private
+
+      # Propagate scope to includes
+      def serializable_add_includes(options = {}) #:nodoc:
+        super do |association, records, opts|
+          yield association, records, opts.merge(:scope => options[:scope])
+        end
+      end
+
   end
 end
 

@@ -11,7 +11,8 @@ RSpec.configure do |c|
     end
     base.connection.create_table :other_models do |t|
       t.integer :some_id
-      t.string :description
+      t.string  :description
+      t.integer :rank
     end
   end
 end
@@ -50,6 +51,7 @@ class OtherModel < ActiveRecord::Base
   belongs_to :some, :class_name => 'SomeModel', :foreign_key => :some_id
 
   serialization_scope :default, :only => :description
+  serialization_scope :admin, :only => [:description, :rank]
 end
 
 class SomeResource < ActiveResource::Base

@@ -79,8 +79,14 @@ describe SerializationScopes do
   end
 
   it 'should correctly apply scopes to nested includes' do
-    some_record.others.create :description => "New"
+    some_record.others.create :description => "New", :rank => 100
     via_json(some_record, :include => :others).should == { "name"=>"Any", "id"=>1, "currency"=>"USD", "others"=>[{ "description" => "New" }] }
+  end
+
+  it 'should propagate scopes to nested includes' do
+    some_record.others.create :description => "New", :rank => 100
+    via_json(some_record, :include => :others, :scope => :admin).
+      should == { "id"=>1, "secret"=>"key", "others"=>[{ "description" => "New", "rank" => 100 }] }
   end
 
   it 'should inherit serialization options correctly' do
