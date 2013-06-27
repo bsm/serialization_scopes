@@ -3,6 +3,7 @@ rvm:
   - 1.9.3
 gemfile:
   - Gemfile
+  - Gemfile.3.2.x
   - Gemfile.3.1.x
   - Gemfile.3.0.x
 

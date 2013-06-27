@@ -1,6 +1,7 @@
 Serialization Scopes
 ====================
 
+[![Build Status](https://travis-ci.org/bsm/serialization_scopes.png?branch=master)](https://travis-ci.org/bsm/serialization_scopes)
 Define scopes for XML/JSON serialization of your ActiveRecord models.
 
 ### In your models
