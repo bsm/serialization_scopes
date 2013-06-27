@@ -26,7 +26,7 @@ module SerializationScopes
     protected
 
       def serialization_scopes
-        @_serialization_scopes ||= superclass.respond_to?(:serialization_scopes) ? superclass.send(:serialization_scopes).clone : {}
+        @_serialization_scopes ||= superclass.respond_to?(:serialization_scopes, true) ? superclass.send(:serialization_scopes).clone : {}
       end
 
   end
