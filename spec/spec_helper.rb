@@ -12,3 +12,4 @@ require 'rspec'
 require File.expand_path('../helper_models', __FILE__)
 
 ActiveRecord::Base.include_root_in_json = false
+ActiveResource::Base.include_root_in_json = true
