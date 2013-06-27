@@ -8,14 +8,15 @@ Gem::Specification.new do |s|
   s.name        = "serialization_scopes"
   s.summary     = "Named scopes for ActiveRecord/ActiveResource serialization methods (to_xml, to_json)"
   s.description = "Adds named scopes for ActiveRecord/ActiveResource serialization methods (to_xml, to_json)"
-  s.version     = File.read(File.expand_path("../VERSION", __FILE__)).strip
+  s.version     = "1.4.0"
 
   s.authors     = ["Dimitrij Denissenko", "Evgeniy Dolzhenko"]
   s.email       = "info@blacksquaremedia.com"
   s.homepage    = "http://github.com/bsm/serialization_scopes"
 
   s.require_path = 'lib'
-  s.files        = Dir['VERSION', 'README', 'lib/**/*', 'rails/**/*']
+  s.files        = `git ls-files`.split("\n")
+  s.test_files   = `git ls-files -- spec/*`.split("\n")
 
   s.add_dependency 'activemodel', '>= 3.0.0'
   s.add_development_dependency 'activerecord', '>= 3.0.0'
