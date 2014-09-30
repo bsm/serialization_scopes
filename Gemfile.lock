@@ -51,7 +51,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  activerecord (>= 4.0.0, < 5.0.0)
+  activerecord
   rake
   rspec
   serialization_scopes!
