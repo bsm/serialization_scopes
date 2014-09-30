@@ -52,7 +52,7 @@ module SerializationScopes # :nodoc:
           "Expected #{expectation}"
         end
 
-        def negative_failure_message
+        def failure_message_when_negated
           "Did not expect #{expectation}"
         end
 

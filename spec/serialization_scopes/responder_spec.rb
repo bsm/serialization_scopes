@@ -25,7 +25,7 @@ describe SerializationScopes::Responder do
   end
 
   it 'should apply scopes by default' do
-    ActualResponder.new.display(nil, {}).should == { :scope => :author }
+    expect(ActualResponder.new.display(nil, {})).to eq({ :scope => :author })
   end
 
 end

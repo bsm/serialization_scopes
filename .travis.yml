@@ -6,3 +6,4 @@ gemfile:
   - Gemfile.3.2.x
   - Gemfile.3.1.x
   - Gemfile.3.0.x
+  - Gemfile.4.0.x

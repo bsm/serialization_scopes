@@ -53,14 +53,3 @@ class OtherModel < ActiveRecord::Base
   serialization_scope :default, :only => :description
   serialization_scope :admin, :only => [:description, :rank]
 end
-
-class SomeResource < ActiveResource::Base
-  self.site = 'http://example.com'
-
-  schema do
-    integer 'id'
-    string 'name', 'secret'
-  end
-
-  serialization_scope :default, :only => [:id, :name]
-end

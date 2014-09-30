@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.name        = "serialization_scopes"
   s.summary     = "Named scopes for ActiveRecord/ActiveResource serialization methods (to_xml, to_json)"
   s.description = "Adds named scopes for ActiveRecord/ActiveResource serialization methods (to_xml, to_json)"
-  s.version     = "1.4.0"
+  s.version     = "1.5.0"
 
   s.authors     = ["Dimitrij Denissenko", "Evgeniy Dolzhenko"]
   s.email       = "info@blacksquaremedia.com"
@@ -18,9 +18,8 @@ Gem::Specification.new do |s|
   s.files        = `git ls-files`.split("\n")
   s.test_files   = `git ls-files -- spec/*`.split("\n")
 
-  s.add_dependency 'activemodel', '>= 3.0.0'
-  s.add_development_dependency 'activerecord', '>= 3.0.0'
-  s.add_development_dependency 'activeresource', '>= 3.0.0'
+  s.add_dependency 'activemodel', '>= 4.1.0'
+  s.add_development_dependency 'activerecord', '>= 4.1.0'
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'sqlite3'
