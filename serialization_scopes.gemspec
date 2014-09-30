@@ -18,8 +18,8 @@ Gem::Specification.new do |s|
   s.files        = `git ls-files`.split("\n")
   s.test_files   = `git ls-files -- spec/*`.split("\n")
 
-  s.add_dependency 'activemodel', '>= 4.1.0'
-  s.add_development_dependency 'activerecord', '>= 4.1.0'
+  s.add_dependency 'activemodel', '>= 4.0.0'
+  s.add_development_dependency 'activerecord', '>= 4.0.0'
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'sqlite3'
